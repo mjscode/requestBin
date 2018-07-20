@@ -5,10 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\requestHub;
 use App\domain;
+use App\Jobs\Broadcast;
 use Illuminate\Support\Facades\Auth;
+use App\Events\Requests;
+use App\Events\Myrequests;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+//use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+
 
 class StoreRequestsController extends Controller
-{
+{ protected $requests;
+
+
     /**
      * Display a listing of the resource.
      *
@@ -72,124 +82,7 @@ class StoreRequestsController extends Controller
         return view('auth/login');
     }
     }
-    
-//getting headers from subdomain, displays each key value pair of the header
-    public function getHeaders($binName,$User){
-    if(Auth::user()) {
-        $domain=$binName.".".$User;
-        $requests=requestHub::where('url_id',"=",$domain )->get();
-        foreach($requests as $one){
-            $arrays = json_decode($one['headers'], TRUE);
-           
-            echo $one['method']." ";
-            echo $one['url_content'];
-            echo "<br>";
-            echo "HEADERS";
-            echo "<br>";
-            foreach ($arrays as $key=>$value){
-                  //return view('show_headers')->withKey($key)->withValue( $value[0] );
-                echo $key. ": ";
-                echo $value[0];
-                echo "<br>";
-           }
-           echo "end of header";
-           echo "<br>";
-           echo "<br>";
-        }
-        }
-
-    else{
-    return view('auth/login');
-    }
-   
-    }
-//get all headers for a given bin
- public function headers($binName){
-        
-        $loggedIn=Auth::user();
-        $User=$loggedIn['name'];
-        $domain=$binName.".".$User;
-        $requests=requestHub::where('url_id',"=",$domain )->get();
-        foreach($requests as $one){
-            $arrays = json_decode($one['headers'], TRUE); 
-            echo $one['method']." ";
-            echo $one['url_content'];
-            echo "<br>";
-            echo "HEADERS";
-            echo "<br>";
-            foreach ($arrays as $key=>$value){
-                  
-                echo $key. ": ";
-                echo $value[0];
-                echo "<br>";
-           }
-           echo "end of header";
-           echo "<br>";
-           echo "<br>";
-        }
-        
-    }
-
-    //get  headers for a given request from double subdomain, binName and user coming from the url
- public function headersOfRequest($binName,$user, $id){
-    if(Auth::user()) {
-    $request=requestHub::where(
-        'id',"=",$id 
-)->get();
-    foreach($request as $one){
-        $arrays = json_decode($one['headers'], TRUE); 
-        return view('show_header')->with('header', $arrays );
-        
-        }
-    }
-    else{
-        return view('auth/login');
-    }
-    }
-//get  headers for a given request from main domain
-    public function headersOfRequest2( $id){
-        
-       
-        $request=requestHub::where(
-            'id',"=",$id 
-        )->get();
-        foreach($request as $one){
-            $arrays = json_decode($one['headers'], TRUE); 
-            return view('show_header')->with('header', $arrays );
-        
-        }   
-    }
-//get  headers for a given request from one subdomain
-public function headersOfRequest3($user, $id){
-    if(Auth::user()) {
-     $request=requestHub::where(
-         'id',"=",$id 
-     )->get();
-     foreach($request as $one){
-         $arrays = json_decode($one['headers'], TRUE); 
-         return view('show_header')->with('header', $arrays );
-        /*
-         
-         echo $one['method']." ";
-        echo $one['url_content'];
-        echo "<br>";
-        echo "HEADERS";
-        echo "<br>";
-         foreach ($arrays as $key=>$value){
-               
-             echo $key. ": ";
-             echo $value[0];
-             echo "<br>";
-        } */
-        } 
-    }
-    else{
-        return view('auth/login');
-    }  
- }
-
-
-
+ 
 //getting requests from the subdomain
     public function getRequests($binName,$User)
     {  //get all request data for the given domain
@@ -197,6 +90,7 @@ public function headersOfRequest3($user, $id){
         $domain=$binName.".".$User;
         //echo $domain;
         $requests=requestHub::where('url_id',"=",$domain )->get();
+        
           return view('show_requests')->with('requests', $requests );
         }
         else{
@@ -226,7 +120,10 @@ public function headersOfRequest3($user, $id){
     {
         //$binName=Route::current()->parameter('binName');
         //$User=Route::current()->parameter('User');
+       // $encoders = array(new XmlEncoder(), new JsonEncoder());
+      // $normalizers = array(new ObjectNormalizer());
 
+       //$serializer = new Serializer($normalizers, $encoders);
 
          //validate that the user and binName exists in table domains
         $validate1=domain::where('user',$User);
@@ -234,7 +131,7 @@ public function headersOfRequest3($user, $id){
          if(!empty($validate1)&&(!empty($validate2))) {
             //store request
             $sr=new requestHub;
-            
+            $sr->username=$User;
             $sr->url_id=$binName.".".$User;
             $sr->IP_Address=$request->ip();
             $sr->method=$request->method();
@@ -244,9 +141,26 @@ public function headersOfRequest3($user, $id){
             
             $sr->query_values=implode( $request->query(), ',');
             $sr->query_keys=implode( $request->keys(), ',');
-            $sr->request_body=json_encode($request->getContent());
+            $sr->request_body=json_encode(urldecode($request->getContent()));
             $sr->save();
             echo "Request saved!";
+           // $httpR='testing laravel broadcasting with pusher to our view /listen';
+            //fire request event to be broadcasted
+           // get_object_vars  turns object into array
+            //event(new Requests(get_object_vars ($request)));
+            
+            //$jsonR = $serializer->serialize($request, 'json');
+            //get the request data, turn it into a $array and broadcast it
+           $query=$request->query->all();
+           $post=urldecode($request->getContent());
+           //$host=$request->server->get('HTTP_HOST');
+           $url = urldecode($request->fullUrl());
+           $method = $request->method();
+           //$time=$request->server->get('REQUEST_TIME');
+           $time = date('Y/m/d H:i:s');
+            $array=['method'=>$method,'url'=>$url, 'query'=>$query,'body'=>$post, 'time'=>$time];
+            event(new Requests($array));
+            event(new Myrequests($array));
             }
             else {
               echo "Error! subdomain does not exist";

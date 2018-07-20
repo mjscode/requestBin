@@ -15,8 +15,45 @@ window.Vue = require('vue');
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('example-component', require('./components/ExampleComponent.vue'));
+//Vue.component('example-component', require('./components/ExampleComponent.vue'));
+Vue.component('request-component', require('./components/request-component.vue'));
+//Vue.component('request-listener', require('./components/request-listener.vue'));
+Vue.component('privatecomponent', require('./components/privatecomponent.vue'));
 
 const app = new Vue({
-    el: '#app'
+    el: '#app',
+    data: {
+        requests: [],
+        myrequests: []
+        
+        
+    },
+    created(){
+        
+        Echo.channel('Live_requests')
+        .listen('Requests', (e) => {
+            console.dir(e);
+            //alert('echo listener is working');
+            this.requests.push({
+                http: e.http
+                
+              });
+            console.dir(this.requests);
+        });
+
+        Echo.private('Personal.nachmanrosen')
+        .listen('Myrequests', (e) => {
+            console.dir(e);
+            alert('private echo listener is working');
+            this.myrequests.push({
+                http: e.http
+                
+              });
+            console.dir(this.myrequests);
+        });  
+    },
+   
 });
+
+
+

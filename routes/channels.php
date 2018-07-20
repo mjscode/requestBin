@@ -1,4 +1,6 @@
 <?php
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Broadcasting\PrivateChannel;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,3 +16,40 @@
 Broadcast::channel('App.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+
+Broadcast::channel('Personal.{username}', function ($user, $username) {
+    return $user->name==$username;
+   //return true;
+    
+   
+});
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+   

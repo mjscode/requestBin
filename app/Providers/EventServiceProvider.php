@@ -16,6 +16,13 @@ class EventServiceProvider extends ServiceProvider
         'App\Events\Event' => [
             'App\Listeners\EventListener',
         ],
+        'App\Events\Requests'=>[
+            'App\Listeners\RequestListener'
+        ],
+        'App\Events\Myrequests'=>[
+            'App\Listeners\MyrequestListener'
+        ],
+        
     ];
 
     /**

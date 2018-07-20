@@ -15,6 +15,8 @@ class RequestHub extends Migration
     {
         Schema::create('requestHubs', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('username');
+           
             $table->string('url_id');
             $table->string('IP_Address');
             $table->json('headers');
@@ -24,6 +26,7 @@ class RequestHub extends Migration
             $table->string('query_keys')->default('none');
             $table->string('query_values')->default('none');
             $table->json('request_body');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
