@@ -18,7 +18,19 @@
                                 <input id="binName" type="text" class="form-control" name="binName" value="{{ old('name') }}" required autofocus>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="selcet" class="col-sm-4 col-form-label text-md-right">{{ __('Or Choose One') }}</label>
 
+                            <div class="col-md-3">
+                                <select id="select" class="form-control" name="selectName">
+                                <option><option>
+                                @foreach($bin_names as $name)
+                                    <option><?=$name->name?></option>
+                                @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div class="form-group row mb-0">
                             <div class="col-md-8 offset-md-4">
                                 <button type="submit" class="btn btn-primary">

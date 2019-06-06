@@ -10,9 +10,7 @@ use App\url_id;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('createBin', function () {
-    return view('createBin');
-});
+Route::get('createBin','CreateBinsController@index');
 //Route::post('urlGenerater', function () {
    // return 'generated';
 //});

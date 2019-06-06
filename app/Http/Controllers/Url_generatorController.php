@@ -11,13 +11,28 @@ class Url_generatorController extends Controller
 {
     public function MakeUrl(){
         //get the signed in users name
-    
+    if(Auth::user()){
     $user=Auth::user();
     $user_account=$user['name'];
   
-    
+    if($_POST['selectName']!=''){
+        $select=$_POST['selectName'];
+    }else{
     $select=$_POST['binName'];  
- //get the binNames for the signed in user
+    }
+    $url=new domain;
+    
+    $url->user=$user_account;
+    $url->binName=$select;
+    $url->save();
+    
+    return redirect('/getBins');
+    }else{
+        return view('auth/login');
+    }
+    }
+}
+//get the binNames for the signed in user
    // $bins= DB::table('Url_ids')->select('binName')->where( 'username'  ,"=", $user_account)->get();
 
 //$names=[1,2,3,4,5];
@@ -36,12 +51,3 @@ class Url_generatorController extends Controller
         }
     */
     //create new entry in db
-    $url=new domain;
-    
-    $url->user=$user_account;
-    $url->binName=$select;
-    $url->save();
-    
-    echo "this bins url:" .$select.'.'.$user_account.'.'.'requestBin.local';
-    }
-}

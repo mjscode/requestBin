@@ -84,6 +84,11 @@
         <main class="py-4">
             @yield('content')
         </main>
+        <footer class="mx-5 my-4 text-center">
+                        <h4 class="font-italic">
+                        This website was created by Moshe Yaakov Levitz and Nachman Rosen
+                        </h4>
+        </footer>
     </div>
 </body>
 </html>
